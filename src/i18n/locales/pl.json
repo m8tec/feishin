@@ -37,7 +37,8 @@
         "addOrRemoveFromSelection": "dodaj lub usuń z wyboru",
         "selectRangeOfItems": "wybierz zakres elementów",
         "selectAll": "wybierz wszystkie",
-        "openApplicationDirectory": "otwórz katalog aplikacji"
+        "openApplicationDirectory": "otwórz katalog aplikacji",
+        "goToCurrent": "przejdź do aktualnego elementu"
     },
     "common": {
         "increase": "zwiększ",
@@ -256,7 +257,8 @@
         "noNetwork": "serwer niedostępny",
         "noNetworkDescription": "nie udało się połączyć z tym serwerem",
         "invalidJson": "nieprawidłowy JSON",
-        "serverLockSingleServer": "dozwolony jest tylko jeden serwer gdy serwer jest zablokowany"
+        "serverLockSingleServer": "dozwolony jest tylko jeden serwer gdy serwer jest zablokowany",
+        "playbackPausedDueToError": "odtwarzanie zostało wstrzymane z powodu błędu"
     },
     "filter": {
         "mostPlayed": "najczęściej odtwarzane",
@@ -676,7 +678,8 @@
         "sleepTimer_off": "wyłączony",
         "sleepTimer_timeRemaining": "pozostało {{time}}",
         "sleepTimer_setCustom": "ustaw wyłącznik",
-        "sleepTimer_cancel": "anuluj wyłączanie"
+        "sleepTimer_cancel": "anuluj wyłączanie",
+        "albumRadio": "radio albumu"
     },
     "setting": {
         "crossfadeStyle_description": "wybierz styl przenikania, który ma być używany do odtwarzania dźwięku",
@@ -1026,10 +1029,16 @@
         "releaseChannel_optionAlpha": "alpha (nightly)",
         "analyticsEnable": "Wysyłaj statystyki na podstawie użytkowania",
         "analyticsEnable_description": "Zanonimizowane statystki użytkowania będą wysyłane do twórcy, aby pomóc w poprawie aplikacji",
-        "automaticUpdates": "Aktualizacje automatyczne",
-        "automaticUpdates_description": "Sprawdzaj i instaluj aktualizacje automatycznie",
+        "automaticUpdates": "Automatyczne aktualizacje",
+        "automaticUpdates_description": "Automatycznie sprawdzaj i instaluj aktualizacje",
         "discordStateIcon": "pokaż ikonę odtwarzania",
-        "discordStateIcon_description": "pokazuje małą ikonę odtwarzania w statusie. ikona pauzy jest zawsze pokazywana gdy \"Pokaż status podczas pauzy\" jest włączone"
+        "discordStateIcon_description": "pokazuje małą ikonę odtwarzania w statusie. ikona pauzy jest zawsze pokazywana gdy \"Pokaż status podczas pauzy\" jest włączone",
+        "useThemePrimaryShade": "użyj głównego odcienia motywu",
+        "useThemePrimaryShade_description": "używaj głównego odcienia zdefiniowanego w wybranym motywie dla głównych wariantów kolorów",
+        "primaryShade": "główny odcień",
+        "primaryShade_description": "nadpisz główny odcień (0-9) używany dla przycisków, linków i innych głównie pokolorowanych elementów",
+        "playerItemConfiguration_description": "skonfiguruj jakie elementy są pokazywane i w jakiej kolejności, w odtwarzaczu pełnoekranowym",
+        "playerItemConfiguration": "konfiguracja elementów odtwarzacza"
     },
     "table": {
         "config": {
@@ -1106,7 +1115,8 @@
                 "bitDepth": "$t(common.bitDepth)",
                 "sampleRate": "$t(common.sampleRate)",
                 "composer": "kompozytor",
-                "titleArtist": "$t(common.title) (wykonawca)"
+                "titleArtist": "$t(common.title) (wykonawca)",
+                "albumGroup": "grupa albumu"
             }
         },
         "column": {

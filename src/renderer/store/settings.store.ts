@@ -74,6 +74,20 @@ const HomeItemSchema = z.enum([
     'recentlyReleased',
 ]);
 
+const PlayerItemSchema = z.enum([
+    'bit_depth',
+    'bit_rate',
+    'bpm',
+    'disc_number',
+    'sample_rate',
+    'track_number',
+    'codec',
+    'release_year',
+    'release_type',
+    'release_date',
+    'genres',
+]);
+
 const ArtistItemSchema = z.enum([
     'biography',
     'compilations',
@@ -469,7 +483,9 @@ export const GeneralSettingsSchema = z.object({
     playButtonBehavior: z.nativeEnum(Play),
     playerbarOpenDrawer: z.boolean(),
     playerbarSlider: PlayerbarSliderSchema,
+    playerItems: z.array(SortableItemSchema(PlayerItemSchema)),
     playlistTarget: PlaylistTargetSchema,
+    primaryShade: z.number().min(0).max(9),
     resume: z.boolean(),
     showLyricsInSidebar: z.boolean(),
     showRatings: z.boolean(),
@@ -487,6 +503,7 @@ export const GeneralSettingsSchema = z.object({
     themeDark: z.nativeEnum(AppTheme),
     themeLight: z.nativeEnum(AppTheme),
     useThemeAccentColor: z.boolean(),
+    useThemePrimaryShade: z.boolean(),
     volumeWheelStep: z.number(),
     volumeWidth: z.number(),
     zoomFactor: z.number(),
@@ -787,6 +804,20 @@ export enum PlayerbarSliderType {
     WAVEFORM = 'waveform',
 }
 
+export enum PlayerItem {
+    BIT_DEPTH = 'bit_depth',
+    BIT_RATE = 'bit_rate',
+    BPM = 'bpm',
+    CODEC = 'codec',
+    DISC_NUMBER = 'disc_number',
+    GENRES = 'genres',
+    RELEASE_DATE = 'release_date',
+    RELEASE_TYPE = 'release_type',
+    RELEASE_YEAR = 'release_year',
+    SAMPLE_RATE = 'sample_rate',
+    TRACK_NUMBER = 'track_number',
+}
+
 export enum PlaylistTarget {
     ALBUM = 'album',
     TRACK = 'track',
@@ -846,6 +877,7 @@ export interface SettingsSlice extends z.infer<typeof SettingsStateSchema> {
         setHomeItems: (item: SortableItem<HomeItem>[]) => void;
         setList: (type: ItemListKey, data: DeepPartial<ItemListSettings>) => void;
         setPlaybackFilters: (filters: PlayerFilter[]) => void;
+        setPlayerItems: (items: SortableItem<PlayerItem>[]) => void;
         setPlaylistBehavior: (target: PlaylistTarget) => void;
         setSettings: (data: DeepPartial<SettingsState>) => void;
         setSidebarItems: (items: SidebarItemType[]) => void;
@@ -869,6 +901,53 @@ export type SortableItem<T extends string> = {
 export type TranscodingConfig = z.infer<typeof TranscodingConfigSchema>;
 
 export type VersionedSettings = SettingsState & { version: number };
+
+export const playerItems: SortableItem<PlayerItem>[] = [
+    {
+        disabled: true,
+        id: PlayerItem.BIT_DEPTH,
+    },
+    {
+        disabled: true,
+        id: PlayerItem.BIT_RATE,
+    },
+    {
+        disabled: true,
+        id: PlayerItem.BPM,
+    },
+    {
+        disabled: false,
+        id: PlayerItem.CODEC,
+    },
+    {
+        disabled: true,
+        id: PlayerItem.DISC_NUMBER,
+    },
+    {
+        disabled: true,
+        id: PlayerItem.GENRES,
+    },
+    {
+        disabled: true,
+        id: PlayerItem.RELEASE_DATE,
+    },
+    {
+        disabled: true,
+        id: PlayerItem.RELEASE_TYPE,
+    },
+    {
+        disabled: false,
+        id: PlayerItem.RELEASE_YEAR,
+    },
+    {
+        disabled: true,
+        id: PlayerItem.SAMPLE_RATE,
+    },
+    {
+        disabled: true,
+        id: PlayerItem.TRACK_NUMBER,
+    },
+];
 
 export const sidebarItems: SidebarItemType[] = [
     {
@@ -1066,7 +1145,9 @@ const initialState: SettingsState = {
             barWidth: 2,
             type: PlayerbarSliderType.SLIDER,
         },
+        playerItems,
         playlistTarget: PlaylistTarget.TRACK,
+        primaryShade: 6,
         resume: true,
         showLyricsInSidebar: true,
         showRatings: true,
@@ -1088,6 +1169,7 @@ const initialState: SettingsState = {
         themeDark: AppTheme.DEFAULT_DARK,
         themeLight: AppTheme.DEFAULT_LIGHT,
         useThemeAccentColor: false,
+        useThemePrimaryShade: true,
         volumeWheelStep: 5,
         volumeWidth: 70,
         zoomFactor: 100,
@@ -1913,6 +1995,11 @@ export const useSettingsStore = createWithEqualityFn<SettingsSlice>()(
                                 state.playback.filters = filters;
                             });
                         },
+                        setPlayerItems: (items: SortableItem<PlayerItem>[]) => {
+                            set((state) => {
+                                state.general.playerItems = items;
+                            });
+                        },
                         setPlaylistBehavior: (target: PlaylistTarget) => {
                             set((state) => {
                                 state.general.playlistTarget = target;
@@ -2255,10 +2342,44 @@ export const useSettingsStore = createWithEqualityFn<SettingsSlice>()(
                     }
                 }
 
+                if (version <= 26) {
+                    // Add ALBUM_GROUP column to the song table config
+                    const listKeysToUpdate: ItemListKey[] = [
+                        ItemListKey.SONG,
+                        ItemListKey.FOLDER,
+                        ItemListKey.PLAYLIST_SONG,
+                        ItemListKey.ALBUM_ARTIST_SONG,
+                        ItemListKey.GENRE_SONG,
+                        ItemListKey.QUEUE_SONG,
+                        ItemListKey.FULL_SCREEN,
+                        ItemListKey.SIDE_QUEUE,
+                    ];
+
+                    listKeysToUpdate.forEach((listKey) => {
+                        const listConfig = state.lists[listKey as keyof typeof state.lists];
+                        if (listConfig?.table?.columns) {
+                            const columns = listConfig.table.columns;
+                            const hasAlbumGroup = columns.some(
+                                (col) => col.id === TableColumn.ALBUM_GROUP,
+                            );
+                            if (!hasAlbumGroup) {
+                                columns.push({
+                                    align: 'start',
+                                    autoSize: false,
+                                    id: TableColumn.ALBUM_GROUP,
+                                    isEnabled: false,
+                                    pinned: 'left',
+                                    width: 200,
+                                });
+                            }
+                        }
+                    });
+                }
+
                 return persistedState;
             },
             name: 'store_settings',
-            version: 25,
+            version: 26,
         },
     ),
 );
@@ -2377,10 +2498,12 @@ export const useThemeSettings = () =>
     useSettingsStore(
         (state) => ({
             followSystemTheme: state.general.followSystemTheme,
+            primaryShade: state.general.primaryShade,
             theme: state.general.theme,
             themeDark: state.general.themeDark,
             themeLight: state.general.themeLight,
             useThemeAccentColor: state.general.useThemeAccentColor,
+            useThemePrimaryShade: state.general.useThemePrimaryShade,
         }),
         shallow,
     );
@@ -2411,6 +2534,8 @@ export const useSidebarPlaylistListFilterRegex = () =>
 
 export const useSidebarItems = () =>
     useSettingsStore((state) => state.general.sidebarItems, shallow);
+
+export const usePlayerItems = () => useSettingsStore((state) => state.general.playerItems, shallow);
 
 export const useSidebarCollapsedNavigation = () =>
     useSettingsStore((state) => state.general.sidebarCollapsedNavigation, shallow);
